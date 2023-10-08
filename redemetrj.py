@@ -1,4 +1,4 @@
- import datetime as dt
+import datetime as dt
 import pandas as pd 
 import requests
 import json
@@ -29,9 +29,11 @@ def start_data(api_key, station, start_date, end_date, output_file):
             dataset.rename(columns={'data': 'datatime'}, inplace = True)
 
             dataset['barometric_pressure'] = dataset['metar'].str.extract(r'(Q\d{4})')
-            dataset['wind_speed'] = dataset['vento'].str.extract(r'(\d{2}km/h)')
-            dataset['wind_dir'] = dataset['vento'].str.extract(r'(\d{3}º)')
-
+            dataset['barometric_pressure'] = dataset['barometric_pressure'].str.replace('Q', '', regex=True)
+            dataset['wind_speed'] = dataset['vento'].str.extract(r'(\d{1,2}km/h)')
+            dataset['wind_dir'] = dataset['vento'].str.extract(r'(\d{2,3}º)')
+            dataset['wind_dir'] = dataset['wind_dir'].str.replace('º', '')
+        
             dataset = dataset.drop("nome", axis=1)
             dataset = dataset.drop("ceu", axis=1)
             dataset = dataset.drop("cidade", axis=1)
