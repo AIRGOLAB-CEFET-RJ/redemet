@@ -30,21 +30,37 @@ def start_data(api_key, station, start_date, end_date, output_file):
 
             dataset['barometric_pressure'] = dataset['metar'].str.extract(r'(Q\d{4})')
             dataset['barometric_pressure'] = dataset['barometric_pressure'].str.replace('Q', '', regex=True)
-            dataset['wind_speed'] = dataset['vento'].str.extract(r'(\d{1,2}km/h)')
-            dataset['wind_dir'] = dataset['vento'].str.extract(r'(\d{2,3}º)')
-            dataset['wind_dir'] = dataset['wind_dir'].str.replace('º', '')
+            if 'vento' in dataset:
+                dataset['wind_speed'] = dataset['vento'].str.extract(r'(\d{1,2}km/h)')
+                dataset['wind_dir'] = dataset['vento'].str.extract(r'(\d{2,3}º)')
+                dataset['wind_dir'] = dataset['wind_dir'].str.replace('º', '')
+            else:
+    
+                dataset['wind_speed'] = None
+                dataset['wind_dir'] = None
         
             dataset = dataset.drop("nome", axis=1)
-            dataset = dataset.drop("ceu", axis=1)
+            if 'ceu' in dataset:
+
+                dataset = dataset.drop("ceu", axis=1)
+        
             dataset = dataset.drop("cidade", axis=1)
-            dataset = dataset.drop("condicoes_tempo", axis=1)
+            if 'condicoes_tempo' in dataset:
+
+                dataset = dataset.drop("condicoes_tempo", axis=1)
             dataset = dataset.drop("localizacao", axis=1)
             dataset = dataset.drop("metar", axis=1)
-            dataset = dataset.drop("temperatura", axis=1)
-            dataset = dataset.drop("tempoImagem", axis=1)
-            dataset = dataset.drop("teto", axis=1)
-            dataset = dataset.drop("visibilidade", axis=1)
-            dataset = dataset.drop("vento", axis=1)
+            if 'tempoImagem' in dataset:
+
+                dataset = dataset.drop("tempoImagem", axis=1)
+            if 'teto' in dataset:
+
+                dataset = dataset.drop("teto", axis=1)
+            if 'visibilidade' in dataset:
+
+                dataset = dataset.drop("visibilidade", axis=1)
+            if 'vento' in dataset:
+                dataset = dataset.drop("vento", axis=1)
             dataset = dataset.drop("lat", axis=1)
             dataset = dataset.drop("lon", axis=1)
 
