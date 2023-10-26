@@ -4,6 +4,7 @@ import requests
 import json
 import csv
 import argparse
+import time
 
 
 def qtd_stations():
@@ -21,15 +22,24 @@ def start_data(api_key, station, start_date, end_date, output_file):
         if clima:
             df = pd.DataFrame(clima)
 
-            df = df.drop("message", axis=1)
-            df = df.drop("status", axis=1)
-            dataset = df.T
+            if 'message' in clima:
+                df = df.drop("message", axis=1)
+            
+            if 'status' in clima:
+                df = df.drop("status", axis=1)
 
+            dataset = df.T
+            
             dataset.rename(columns={'ur': 'relative_humidity'}, inplace = True)
             dataset.rename(columns={'data': 'datatime'}, inplace = True)
 
-            dataset['barometric_pressure'] = dataset['metar'].str.extract(r'(Q\d{4})')
-            dataset['barometric_pressure'] = dataset['barometric_pressure'].str.replace('Q', '', regex=True)
+            if 'barometric_pressure' in dataset:
+
+                dataset['barometric_pressure'] = dataset['metar'].str.extract(r'(Q\d{4})')
+                dataset['barometric_pressure'] = dataset['barometric_pressure'].str.replace('Q', '', regex=True)
+            else:
+                dataset['barometric_pressure'] = None
+
             if 'vento' in dataset:
                 dataset['wind_speed'] = dataset['vento'].str.extract(r'(\d{1,2}km/h)')
                 dataset['wind_dir'] = dataset['vento'].str.extract(r'(\d{2,3}º)')
@@ -39,30 +49,41 @@ def start_data(api_key, station, start_date, end_date, output_file):
                 dataset['wind_speed'] = None
                 dataset['wind_dir'] = None
         
-            dataset = dataset.drop("nome", axis=1)
-            if 'ceu' in dataset:
+            if 'nome' in dataset:
+                dataset = dataset.drop("nome", axis=1)
 
+            if 'ceu' in dataset:
                 dataset = dataset.drop("ceu", axis=1)
         
-            dataset = dataset.drop("cidade", axis=1)
+            if 'cidade' in dataset:
+                dataset = dataset.drop("cidade", axis=1)
+
             if 'condicoes_tempo' in dataset:
-
                 dataset = dataset.drop("condicoes_tempo", axis=1)
-            dataset = dataset.drop("localizacao", axis=1)
-            dataset = dataset.drop("metar", axis=1)
+
+            if 'localizacao' in dataset:
+                dataset = dataset.drop("localizacao", axis=1)
+
+            if 'metar' in dataset:
+                dataset = dataset.drop("metar", axis=1)
+
             if 'tempoImagem' in dataset:
-
                 dataset = dataset.drop("tempoImagem", axis=1)
+
             if 'teto' in dataset:
-
                 dataset = dataset.drop("teto", axis=1)
-            if 'visibilidade' in dataset:
 
+            if 'visibilidade' in dataset:
                 dataset = dataset.drop("visibilidade", axis=1)
+
             if 'vento' in dataset:
                 dataset = dataset.drop("vento", axis=1)
-            dataset = dataset.drop("lat", axis=1)
-            dataset = dataset.drop("lon", axis=1)
+            
+            if 'lat' in dataset:
+                dataset = dataset.drop("lat", axis=1)
+            
+            if 'lon' in dataset:
+                dataset = dataset.drop("lon", axis=1)
 
             dataframes.append(dataset)
             
@@ -72,6 +93,7 @@ def start_data(api_key, station, start_date, end_date, output_file):
         combined_df = pd.concat(dataframes, ignore_index=True)
         combined_df.to_csv(f"{output_file}.csv", index=False)
         print(f'Dados salvos em {output_file}.csv')
+
 
 
 def argumentos():
